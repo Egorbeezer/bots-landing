@@ -67,10 +67,13 @@
   .lede{max-width:720px;font-size:19px;color:var(--muted);margin:0 0 28px}
   .chips{display:flex;gap:10px;flex-wrap:wrap}
   .chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;
-    background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);font-size:14px;font-weight:600}
+    background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);font-size:14px;font-weight:600;
+    color:var(--ink);text-decoration:none;transition:transform .15s ease,border-color .15s ease}
+  .chip:hover{border-color:var(--violet);transform:translateY(-1px)}
 
   section{padding:26px 0 10px}
-  .bot{padding:46px 0;border-top:1px solid var(--line)}
+  .bot{padding:46px 0;border-top:1px solid var(--line);scroll-margin-top:78px}
+  #tech{scroll-margin-top:78px}
   .bot-head{display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap}
   .bot-emoji{font-size:44px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.12))}
   .bot h2{font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0;font-weight:820}
@@ -156,11 +159,11 @@
     <p class="lede">Оценка задач, дейли, разбор спринта, дни рождения и релизные анонсы.
       Всё живёт прямо в VK Teams, подключается к Jira и Confluence и работает без ручных таблиц.</p>
     <div class="chips">
-      <span class="chip">🎲 @poker_bot</span>
-      <span class="chip">🗓️ @facilitator_bot</span>
-      <span class="chip">📊 @sprint_analysis_bot</span>
-      <span class="chip">🎂 @birthdays_bot</span>
-      <span class="chip">📝 @post_writer_bot</span>
+      <a class="chip" href="#poker">🎲 @poker_bot</a>
+      <a class="chip" href="#facilitator">🗓️ @facilitator_bot</a>
+      <a class="chip" href="#sprint">📊 @sprint_analysis_bot</a>
+      <a class="chip" href="#birthday">🎂 @birthdays_bot</a>
+      <a class="chip" href="#post">📝 @post_writer_bot</a>
     </div>
   </div>
 </header>
