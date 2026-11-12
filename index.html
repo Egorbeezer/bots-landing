@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Пять ботов для команды</title>
+<meta name="description" content="Покер-планинг, фасилитатор, разбор спринта, поздравлятор и пост-мейкер: что умеют, зачем нужны и как работают.">
+<style>
+  :root{
+    --bg:#f7f8fc;
+    --card:#ffffff;
+    --ink:#151a2d;
+    --muted:#5d647c;
+    --line:#e5e8f2;
+    --violet:#6d28d9;
+    --pink:#db2777;
+    --blue:#2563eb;
+    --green:#0f9d58;
+    --orange:#ea580c;
+    --radius:22px;
+    --shadow:0 2px 4px rgba(21,26,45,.05), 0 18px 40px rgba(21,26,45,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0e1120; --card:#171b2e; --ink:#eef1fb; --muted:#a6acc7;
+      --line:#272c47; --shadow:0 2px 4px rgba(0,0,0,.4), 0 18px 40px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--violet)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+
+  nav{
+    position:sticky;top:0;z-index:20;
+    backdrop-filter:saturate(180%) blur(14px);
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    border-bottom:1px solid var(--line);
+  }
+  nav .wrap{display:flex;align-items:center;gap:18px;min-height:60px;flex-wrap:wrap}
+  nav .brand{font-weight:800;letter-spacing:-.02em;font-size:16px}
+  nav .links{display:flex;gap:14px;flex-wrap:wrap;margin-left:auto}
+  nav a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600}
+  nav a:hover{color:var(--ink)}
+
+  header.hero{position:relative;overflow:hidden;padding:84px 0 64px}
+  header.hero::before,header.hero::after{
+    content:"";position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;z-index:-1;
+  }
+  header.hero::before{width:420px;height:420px;background:#c4b5fd;top:-140px;left:-120px}
+  header.hero::after{width:380px;height:380px;background:#fbcfe8;top:-60px;right:-120px}
+  @media (prefers-color-scheme: dark){
+    header.hero::before{background:#4c1d95;opacity:.35}
+    header.hero::after{background:#831843;opacity:.3}
+  }
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--violet);background:color-mix(in srgb, var(--violet) 10%, transparent);
+    padding:7px 14px;border-radius:999px;margin-bottom:22px}
+  h1{font-size:clamp(34px,6vw,62px);line-height:1.05;letter-spacing:-.03em;margin:0 0 18px;font-weight:850}
+  h1 .grad{background:linear-gradient(120deg,var(--violet),var(--pink) 60%,var(--orange));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{max-width:720px;font-size:19px;color:var(--muted);margin:0 0 28px}
+  .chips{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;
+    background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);font-size:14px;font-weight:600}
+
+  section{padding:26px 0 10px}
+  .bot{padding:46px 0;border-top:1px solid var(--line)}
+  .bot-head{display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap}
+  .bot-emoji{font-size:44px;line-height:1;filter:drop-shadow(0 6px 12px rgba(0,0,0,.12))}
+  .bot h2{font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0;font-weight:820}
+  .nick{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:var(--muted);
+    background:var(--card);border:1px solid var(--line);padding:4px 10px;border-radius:999px}
+  .bot .why{font-size:18px;color:var(--muted);max-width:760px;margin:6px 0 26px}
+  .bot .why b{color:var(--ink)}
+
+  .cols{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:start}
+  @media (max-width:860px){.cols{grid-template-columns:1fr}}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:26px}
+  .panel h3{margin:0 0 14px;font-size:14px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .features{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+  .features li{position:relative;padding-left:30px}
+  .features li::before{content:"✦";position:absolute;left:2px;top:0;color:var(--accent,var(--violet));font-size:15px}
+  .steps{counter-reset:s;list-style:none;margin:0;padding:0;display:grid;gap:14px}
+  .steps li{counter-increment:s;position:relative;padding-left:44px}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:-2px;width:30px;height:30px;border-radius:10px;
+    display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;background:var(--accent,var(--violet))}
+  .steps b{display:block}
+
+  .mock{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px;font-size:14px}
+  .mock .bar{display:flex;align-items:center;gap:8px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+  .dot.on{background:var(--accent,var(--violet))}
+  .mock .msg{background:color-mix(in srgb, var(--accent,var(--violet)) 8%, transparent);
+    border:1px solid color-mix(in srgb, var(--accent,var(--violet)) 22%, transparent);
+    border-radius:14px;padding:14px}
+  .mock .who{font-weight:700;margin-bottom:6px}
+  .mock .muted{color:var(--muted)}
+  .vote-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  .vote{border:1px solid var(--line);border-radius:10px;padding:9px 0;text-align:center;font-weight:700;
+    background:var(--card)}
+  .vote.hot{background:var(--accent,var(--violet));color:#fff;border-color:transparent}
+  .metric-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .metric{font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;
+    background:color-mix(in srgb, var(--accent,var(--violet)) 12%, transparent);
+    color:var(--accent,var(--violet))}
+  .mock img{max-width:100%;border-radius:12px;display:block;border:1px solid var(--line)}
+  .mock .shot{margin-top:12px}
+  .caption{font-size:12px;color:var(--muted);margin-top:8px}
+
+  .tech{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+  @media (max-width:860px){.tech{grid-template-columns:1fr}}
+  .tech .panel{padding:20px}
+  .tech .ico{font-size:26px}
+  .tech b{display:block;margin:8px 0 4px}
+
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:34px 0 54px;color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none;transition:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">🤖 Боты команды</div>
+    <div class="links">
+      <a href="#poker">🎲 Покер</a>
+      <a href="#facilitator">🗓️ Дейли</a>
+      <a href="#sprint">📊 Спринт</a>
+      <a href="#birthday">🎂 Поздравлятор</a>
+      <a href="#post">📝 Анонсы</a>
+      <a href="#tech">⚙️ Под капотом</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">🤖 Автоматизация команды</div>
+    <h1>Пять ботов,<br><span class="grad">которые убирают рутину</span></h1>
+    <p class="lede">Оценка задач, дейли, разбор спринта, дни рождения и релизные анонсы.
+      Всё живёт прямо в VK Teams, подключается к Jira и Confluence и работает без ручных таблиц.</p>
+    <div class="chips">
+      <span class="chip">🎲 @poker_bot</span>
+      <span class="chip">🗓️ @facilitator_bot</span>
+      <span class="chip">📊 @sprint_analysis_bot</span>
+      <span class="chip">🎂 @birthdays_bot</span>
+      <span class="chip">📝 @post_writer_bot</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ПОКЕР -->
+  <article class="bot reveal" id="poker" style="--accent:#7c3aed">
+    <div class="bot-head">
+      <div class="bot-emoji">🎲</div>
+      <h2>Покер-планинг</h2>
+      <span class="nick">@poker_bot</span>
+    </div>
+    <p class="why"><b>Зачем:</b> убрать субъективность из оценки. Команда голосует вслепую,
+      никто не подстраивается под коллегу, а итог сразу уходит в Story Points Jira.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3>Что умеет</h3>
+        <ul class="features">
+          <li>Запуск одной командой в чате, карточка в треде</li>
+          <li>Голоса скрыты до вскрытия</li>
+          <li>Шкалы: Фибоначчи, линейная, степени двойки</li>
+          <li>Управление у автора или у любого участника</li>
+          <li>Запись Story Points в Jira с проверкой</li>
+          <li>Настройки в личке кнопками</li>
+        </ul>
+      </div>
+      <div class="mock">
+        <div class="bar"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="msg">
+          <div class="who">🎲 Покер-планинг · SHERST-2274</div>
+          <div class="muted">✅ Проголосовали (3): Аня, Борис, Вера</div>
+          <div class="vote-grid">
+            <div class="vote">1</div><div class="vote">2</div><div class="vote">3</div><div class="vote hot">5</div>
+            <div class="vote">8</div><div class="vote">13</div><div class="vote">21</div><div class="vote">?</div>
+          </div>
+        </div>
+        <div class="caption">Голоса закрыты, кнопки остаются у всех до конца раунда</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ФАСИЛИТАТОР -->
+  <article class="bot reveal" id="facilitator" style="--accent:#0ea5e9">
+    <div class="bot-head">
+      <div class="bot-emoji">🗓️</div>
+      <h2>Фасилитатор</h2>
+      <span class="nick">@facilitator_bot</span>
+    </div>
+    <p class="why"><b>Зачем:</b> снять с тимлида ручную координацию дейли и сделать ротацию
+      ведущих честной. Плюс порядок выступлений на Sprint review без перетягивания.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3>Что умеет</h3>
+        <ul class="features">
+          <li>Выбирает ведущего с учётом истории и отдыха</li>
+          <li>Пропускает выходные, праздники и дни спринта</li>
+          <li>Настройки в личке: время, дни, список, формат</li>
+          <li>Команда <b>/go</b> перевыбирает ведущего сейчас</li>
+          <li>Порядок команд на Sprint review с продактами</li>
+          <li>Алерты только при реальных сбоях</li>
+        </ul>
+      </div>
+      <div class="mock">
+        <div class="bar"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="msg">
+          <div class="who">🗓️ Дейлик</div>
+          <div class="muted">🎲 Дейлик сегодня фасилитирует: <b>Иван</b></div>
+          <div class="caption" style="margin-top:10px">Каждое утро в чате команды</div>
+        </div>
+        <div class="msg" style="margin-top:10px">
+          <div class="who">📋 Sprint review</div>
+          <div class="muted">🎲 Порядок выступления: 1. МП · 2. Коты · 3. Pepe · 4. Лагерь героев · 5. Maneki · 6. Шерсть</div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- СПРИНТ -->
+  <article class="bot reveal" id="sprint" style="--accent:#2563eb">
+    <div class="bot-head">
+      <div class="bot-emoji">📊</div>
+      <h2>Разбор спринта</h2>
+      <span class="nick">@sprint_analysis_bot</span>
+    </div>
+    <p class="why"><b>Зачем:</b> заменить ручной сбор спринт-отчёта и замечать застой раньше.
+      Бот сам собирает метрики из Jira и присылает понятный разбор в чат.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3>Что умеет</h3>
+        <ul class="features">
+          <li>Отчёт <b>/full</b> и <b>/short</b> по активному спринту</li>
+          <li>Cycle Time, WIP, carryover, scope creep, SP</li>
+          <li>Текст отчёта собирает AI-агент</li>
+          <li>Старение Story и напоминания о сроке</li>
+          <li>Настройка под любую доску и типы задач</li>
+          <li>Заведение багов и задач: <b>/bug</b> и <b>/task</b></li>
+        </ul>
+      </div>
+      <div class="mock">
+        <div class="bar"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="msg">
+          <div class="who">📊 Разбор спринта · S84</div>
+          <div class="metric-row">
+            <span class="metric">CT 12 д</span>
+            <span class="metric">WIP 6</span>
+            <span class="metric">SP 34</span>
+            <span class="metric">carryover 2</span>
+          </div>
+          <div class="muted" style="margin-top:10px">В работе 6 Story, две тянутся дольше 20 дней. Предлагаю обсудить на дейли.</div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ПОЗДРАВЛЯТОР -->
+  <article class="bot reveal" id="birthday" style="--accent:#db2777">
+    <div class="bot-head">
+      <div class="bot-emoji">🎂</div>
+      <h2>Поздравлятор</h2>
+      <span class="nick">@birthdays_bot</span>
+    </div>
+    <p class="why"><b>Зачем:</b> не забывать дни рождения коллег. Бот сам помнит, напоминает
+      заранее и поздравляет в командном чате, без ручных списков и напоминалок.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3>Что умеет</h3>
+        <ul class="features">
+          <li>Собирает участников и имена из оргструктуры</li>
+          <li>Личные напоминания и поздравления в чат</li>
+          <li>Подписки, отказы и просьбы заполнить дату</li>
+          <li>Защита от дублей и повторов</li>
+          <li>Извинение, если день был пропущен из-за сбоя</li>
+          <li>Мониторинг и восстановление</li>
+        </ul>
+      </div>
+      <div class="mock">
+        <div class="bar"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="shot"><img src="screens/notif.png" alt="Напоминание о дне рождения"></div>
+        <div class="caption">Напоминание приходит заранее, поздравление — в день события</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ПОСТ -->
+  <article class="bot reveal" id="post" style="--accent:#ea580c">
+    <div class="bot-head">
+      <div class="bot-emoji">📝</div>
+      <h2>Пост-мейкер</h2>
+      <span class="nick">@post_writer_bot</span>
+    </div>
+    <p class="why"><b>Зачем:</b> ускорить релизные анонсы и держать единый формат.
+      Автор присылает ссылку, бот собирает контекст и предлагает готовый черновик.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3>Что умеет</h3>
+        <ul class="features">
+          <li>Ссылка на Jira или Confluence, включая вложенные страницы</li>
+          <li>Черновик по эталонам стиля команды</li>
+          <li>Проверка, что факты и формат не потерялись</li>
+          <li>Список доступа и память диалога</li>
+          <li>Публикация в командный чат</li>
+          <li>Мониторинг доступов к источникам</li>
+        </ul>
+      </div>
+      <div class="mock">
+        <div class="bar"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="msg">
+          <div class="who">📝 Черновик анонса</div>
+          <div class="muted">Собрал контекст из задачи и страницы Confluence. Проверил факты и стиль, готов к публикации.</div>
+          <div class="metric-row">
+            <span class="metric">Jira</span>
+            <span class="metric">Confluence</span>
+            <span class="metric">AI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ТЕХНОЛОГИИ -->
+  <section id="tech" class="reveal" style="padding-top:44px">
+    <div class="bot-head">
+      <div class="bot-emoji">⚙️</div>
+      <h2>Под капотом</h2>
+    </div>
+    <p class="why">Всё живёт на внутренней платформе автоматизации и не требует своих серверов.</p>
+    <div class="tech">
+      <div class="panel">
+        <div class="ico">🧩</div><b>AiFlow</b>
+        <span class="muted">Графы, расписания, вебхуки, состояние и AI-агенты.</span>
+      </div>
+      <div class="panel">
+        <div class="ico">💬</div><b>VK Teams Bot API</b>
+        <span class="muted">События чатов, кнопки, карточки и личные сообщения.</span>
+      </div>
+      <div class="panel">
+        <div class="ico">🎯</div><b>Jira и Confluence</b>
+        <span class="muted">Задачи, Story Points, страницы и релизные материалы.</span>
+      </div>
+      <div class="panel">
+        <div class="ico">🗄️</div><b>Redis</b>
+        <span class="muted">Настройки и состояние ботов, без потери между запусками.</span>
+      </div>
+      <div class="panel">
+        <div class="ico">🤖</div><b>LLM-агенты</b>
+        <span class="muted">Тексты разборов и анонсов на основе метрик и источников.</span>
+      </div>
+      <div class="panel">
+        <div class="ico">🧪</div><b>Тесты и мониторинг</b>
+        <span class="muted">Около 1400 проверок логики и алерты только при сбоях.</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>Сделано с ❤️ и большим количеством тестов · 2026</div>
+    <div>🎲 🗓️ 📊 🎂 📝</div>
+  </div>
+</footer>
+
+<script>
+  const items = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    items.forEach(i => io.observe(i));
+  } else {
+    items.forEach(i => i.classList.add('in'));
+  }
+</script>
+</body>
+</html>
